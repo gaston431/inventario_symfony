@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ArticuloController!{% endblock %}
+{% block title %}Listado de Articulos{% endblock %}
 
 {% block body %}
 <style>
@@ -9,26 +9,36 @@
 </style>
 
 <div class="example-wrapper">
-    <table id="articulos" class="table table-bordered">
-        <thead>
-            <th>Numero</th>
-            <th>Descripcion</th>
-            <th>Inventario</th>
-            <th>Ubicacion</th>
-            <th>Movimientos</th>
-        </thead>
-        <tbody>
-            {% for articulo in articulos %}
-                <tr>
-                    <td>{{ articulo.numero }} </td>
-                    <td>{{ articulo.descripcion }} </td>
-                    <td>{{ articulo.inventario }} </td>
-                    <td>{{ articulo.ubicacion }} </td>
-                    <td> <a href="{{ path('movimientos_articulo', {id: articulo.id}) }}"> Ver Movimientos </a></td>
-                </tr>
-            {% endfor %}
-        </tbody>
-          
-    </table>
+
+    {% if articulos is not empty %}
+        <h3> Listado de Artículos de Inventario </h3>
+
+        <table id="articulos" class="table table-bordered table-hover">
+            <thead>
+                <th>Numero</th>
+                <th>Descripcion</th>
+                <th>Inventario</th>
+                <th>Ubicacion</th>
+                <th>Movimientos</th>
+            </thead>
+            <tbody>
+                {% for articulo in articulos %}
+                    <tr>
+                        <td>{{ articulo.numero }} </td>
+                        <td>{{ articulo.descripcion }} </td>
+                        <td>{{ articulo.inventario }} </td>
+                        <td>{{ articulo.ubicacion }} </td>
+                        <td> <a class="btn btn-primary" href="{{ path('movimientos_articulo', {id: articulo.id}) }}"> Ver Movimientos </a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+              
+        </table>
+
+    {% else %}
+        <h3> No hay articulos. Crear uno mediante api </h3>
+
+    {% endif %}
+
 </div>
 {% endblock %}

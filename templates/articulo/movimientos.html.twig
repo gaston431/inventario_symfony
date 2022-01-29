@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ArticuloController!{% endblock %}
+{% block title %}Listado de movimientos de un artículo{% endblock %}
 
 {% block body %}
 <style>
@@ -9,26 +9,33 @@
 </style>
 
 <div class="example-wrapper">
-    <table id="articulos" class="table table-bordered">
-        <thead>
-        	<th>Articulo</th>
-            <th>Cantidad</th>
-            <th>Tipo</th>
-            <th>Fecha</th>
-        </thead>
-        <tbody>
-            {% for movimiento in movimientos %}
-                <tr>
-                    <td>{{ movimiento.articulo.descripcion }} </td>
-                    <td>{{ movimiento.cantidad }} </td>
-                    <td>{{ movimiento.tipo }} </td>
-                    <td>{{ movimiento.fecha|date('Y-m-d H:i:s') }} </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-          
-    </table>
 
-    <a href="{{ path('articulos') }}"> Volver a articulos </a>
+    {% if movimientos is not empty %}
+        <h3> Listado de Movimientos de {{ movimientos[0].getArticulo().getDescripcion() }} </h3>
+
+        <table id="articulos" class="table table-bordered table-hover">
+            <thead>
+                <th>Cantidad</th>
+                <th>Tipo</th>
+                <th>Fecha</th>
+            </thead>
+            <tbody>
+                {% for movimiento in movimientos %}
+                    <tr>
+                        <td>{{ movimiento.cantidad }} </td>
+                        <td>{{ movimiento.tipo }} </td>
+                        <td>{{ movimiento.fecha|date('Y-m-d H:i:s') }} </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+              
+        </table>
+
+    {% else %}
+        <h3> No hay movimientos </h3>
+
+    {% endif %}
+
+    <a class="btn btn-info" href="{{ path('articulos') }}"> Volver a articulos </a>
 </div>
 {% endblock %}

@@ -9,13 +9,12 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Entity\Articulo;
 use App\Entity\Movimiento;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ArticuloController extends AbstractController
 {
     /**
-     * @Route("/articulos", name="articulos")
+     * @Route("/", name="articulos")
      */
     public function index(ManagerRegistry $doctrine): Response
     {   
@@ -46,7 +45,7 @@ class ArticuloController extends AbstractController
     public function articulos(ManagerRegistry $doctrine): Response
     {   
         $articulos = $doctrine->getRepository(Articulo::class)->findAll();
-        //dd($articulos);
+        
         $data = [];
         foreach ($articulos as $articulo) {
             $data[] = [
@@ -88,6 +87,35 @@ class ArticuloController extends AbstractController
     }
 
     /**
+     * @Route("/api/articulo", name="add_articulo", methods={"POST"})
+     */
+    public function addArticulo(Request $request, ManagerRegistry $doctrine): Response
+    {   
+        $data = $request->request->all();
+        
+        $numero = $data['numero'];
+        $descripcion = $data['descripcion'];
+        $ubicacion = $data['ubicacion'];
+        
+        if (empty($numero) || empty($descripcion) || empty($ubicacion)) {
+            throw new NotFoundHttpException('Expecting mandatory parameters!');
+        }
+
+        $entityManager = $doctrine->getManager();
+
+        $articulo = new Articulo();
+        $articulo->setNumero($numero);
+        $articulo->setDescripcion($descripcion);
+        $articulo->setUbicacion($ubicacion);
+        $articulo->setInventario(0);
+
+        $entityManager->persist($articulo);
+        $entityManager->flush();
+
+        return $this->json(['status' => 'Articulo creado! id: '. $articulo->getId()]);
+    }
+
+    /**
      * @Route("/api/movimiento", name="add_movimiento", methods={"POST"})
      */
     public function addMovimiento(Request $request, ManagerRegistry $doctrine): Response
@@ -96,10 +124,9 @@ class ArticuloController extends AbstractController
         
         $cantidad = $data['cantidad'];
         $tipo = $data['tipo'];
-        //$fecha = $data['fecha'];
         $articulo_id = $data['articulo_id'];
         
-        if (empty($cantidad) || empty($tipo) || empty($articulo_id)) {
+        if ($cantidad < 0 || empty($tipo) || empty($articulo_id)) {
             throw new NotFoundHttpException('Expecting mandatory parameters!');
         }
 
@@ -114,6 +141,7 @@ class ArticuloController extends AbstractController
 
         $movimiento->setArticulo($articulo);
 
+        //actualizamos el inventario(stock) del articulo segun tipo
         switch ($tipo) {
             case 'compra':
                 $cant = $articulo->getInventario() + $cantidad;
@@ -134,7 +162,6 @@ class ArticuloController extends AbstractController
         $entityManager->persist($movimiento);
         $entityManager->flush();
 
-        return $this->json(['status' => 'Movimiento creado!']);
-        //return new JsonResponse(['status' => 'Movimiento created!'], Response::HTTP_CREATED);
+        return $this->json(['status' => 'Movimiento creado! id: ' . $movimiento->getId()]);
     }
 }
