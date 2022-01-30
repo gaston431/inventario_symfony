@@ -98,7 +98,7 @@ class ArticuloController extends AbstractController
         $ubicacion = $data['ubicacion'];
         
         if (empty($numero) || empty($descripcion) || empty($ubicacion)) {
-            throw new NotFoundHttpException('Expecting mandatory parameters!');
+            throw new NotFoundHttpException('No se encontraron datos obligatorios: numero, descripcion y/o ubicacion.');
         }
 
         $entityManager = $doctrine->getManager();
@@ -107,8 +107,7 @@ class ArticuloController extends AbstractController
         $articulo->setNumero($numero);
         $articulo->setDescripcion($descripcion);
         $articulo->setUbicacion($ubicacion);
-        $articulo->setInventario(0);
-
+        
         $entityManager->persist($articulo);
         $entityManager->flush();
 
@@ -127,7 +126,13 @@ class ArticuloController extends AbstractController
         $articulo_id = $data['articulo_id'];
         
         if ($cantidad < 0 || empty($tipo) || empty($articulo_id)) {
-            throw new NotFoundHttpException('Expecting mandatory parameters!');
+            throw new NotFoundHttpException('No se encontraron datos obligatorios: cantidad, tipo y/o articulo_id.');
+        }
+
+        $articulo = $doctrine->getRepository(Articulo::class)->find($articulo_id);
+
+        if (!$articulo) {
+            throw new NotFoundHttpException('El articulo no existe!');
         }
 
         $entityManager = $doctrine->getManager();
@@ -136,9 +141,7 @@ class ArticuloController extends AbstractController
         $movimiento->setCantidad($cantidad);
         $movimiento->setFecha(new \DateTime);
         $movimiento->setTipo($tipo);
-
-        $articulo = $doctrine->getRepository(Articulo::class)->find($articulo_id);
-
+        
         $movimiento->setArticulo($articulo);
 
         //actualizamos el inventario(stock) del articulo segun tipo
@@ -147,6 +150,9 @@ class ArticuloController extends AbstractController
                 $cant = $articulo->getInventario() + $cantidad;
                 break;
             case 'venta':
+                if ($articulo->getInventario() < $cantidad) {
+                    throw new NotFoundHttpException('No hay stock!');
+                }
                 $cant = $articulo->getInventario() - $cantidad;
                 break;
             case 'recuento':

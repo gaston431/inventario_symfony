@@ -47,6 +47,7 @@ class Articulo
     public function __construct()
     {
         $this->movimientos = new ArrayCollection();
+        $this->setInventario(0);
     }
 
     public function getId(): ?int
